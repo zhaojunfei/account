@@ -1,0 +1,186 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.qianbao.mapper.AccountMapper">
+    
+    <resultMap type="com.qianbao.account.model.AccountInfo" id="AccountInfoMap" >
+       <id property="accountNo" column="aif_accountNo"/>
+       <result property="accountName" column="aif_accountName"/>
+       <result property="userNo" column="aif_userNo"/>
+       <result property="balance" column="aif_balance"/>
+       <result property="balanceFrozen" column="aif_balanceFrozen"/>
+       <result property="balanceAvailable" column="aif_balanceAvailable"/>
+       <result property="status" column="aif_status"/>
+       <result property="openTime" column="aif_openTime"/>
+    </resultMap>
+    <resultMap type="com.qianbao.account.model.AccountRecord" id="AccountRecordMap" >
+       <id property="serialNo" column="acd_serialno"/>
+       <result property="accountNo" column="acd_accountno"/>
+       <result property="tranTime" column="acd_trantime"/>
+       <result property="tranType" column="acd_trantype"/>
+       <result property="otherAccountNo" column="acd_otheraccountno"/>
+       <result property="otherAccountName" column="acd_otheraccountname"/>
+       <result property="amount" column="acd_amount"/>
+       <result property="balance" column="acd_balance"/>
+       <result property="channelSystemNo" column="acd_channelsystemno"/>
+       <result property="channelSerialNo" column="acd_channelserialno"/>
+       <result property="status" column="acd_status"/>
+    </resultMap>
+    <resultMap type="com.qianbao.account.model.AccountLog" id="AccountLogMap" >
+       <result property="time" column="alg_time"/>
+       <result property="code" column="alg_code"/>
+       <result property="returnCode" column="alg_returnCode"/>
+       <result property="returnMessage" column="alg_returnMessage"/>
+       <result property="channelSystemNo" column="alg_channelsystemno"/>
+       <result property="channelSerialNo" column="alg_channelserialno"/>
+       <result property="reversalStatus" column="alg_REVERSALSTATUS"/>
+
+    </resultMap>
+    <!-- 创建账户 -->
+	<insert id="createAccount" parameterType="AccountInfo" keyProperty="accountNo">
+		<selectKey keyProperty="accountNo" resultType="String" order="BEFORE">
+			select getSequence('accountNo')
+		</selectKey>
+		insert into 
+			accountinfo(aif_accountNo,aif_accountName,aif_userNo,aif_balance,aif_balanceFrozen,aif_status,aif_openTime,AIF_CHANNELSYSTEMNO,AIF_CHANNELSERIALNO)
+		values
+          (#{accountNo},#{accountName}, #{userNo}, 0, 0, 0, DATE_FORMAT(now(), '%Y%m%d%H%i%S'),#{channelSystemNo},#{channelSerialNo});
+    </insert>
+    
+    <!-- 查询账户 -->
+    <select id="queryAccount" parameterType="String" resultMap="AccountInfoMap">
+		select 
+			aif_accountNo,aif_accountName,aif_userNo,aif_balance,aif_balanceFrozen,AIF_BALANCE-AIF_BALANCEFROZEN aif_balanceAvailable,aif_status,aif_openTime
+		from
+			accountinfo
+		where
+			aif_accountNo=#{accountNo}
+    </select>
+    <!-- 冻结账户 -->
+    <update id="freezeAccount" parameterType="AccountInfo">
+		update 
+			accountinfo
+		set aif_balanceFrozen=aif_balanceFrozen+#{amount}
+		where
+			aif_accountNo=#{accountNo}
+    </update>
+    <!-- 解冻账户 -->
+    <update id="unFreezeAccount" parameterType="AccountInfo">
+		update 
+			accountinfo
+		set aif_balanceFrozen=aif_balanceFrozen-#{amount}
+		where
+			aif_accountNo=#{accountNo}
+    </update>
+    <!-- 通用记账:记余额账 -->
+    <update id="updateAccount" parameterType="AccountInfo">
+		update 
+			accountinfo
+		set aif_balance=aif_balance+#{amount}
+		where
+			aif_accountNo=#{accountNo}
+    </update>
+    <!-- 通用记账:记明细账 -->
+    <insert id="insertAccountRecord" parameterType="AccountRecord" keyProperty="serialNo">
+		<selectKey keyProperty="serialNo" resultType="String" order="BEFORE">
+			select getSequence('serialNo')
+		</selectKey>
+		insert into 
+			accountrecord(acd_serialno,acd_accountno,acd_trantime,acd_trantype,
+			acd_otheraccountno,acd_otheraccountname,acd_amount,acd_balance,
+			acd_channelsystemno,acd_channelserialno,acd_status)
+		values
+			(#{serialNo},#{accountNo}, DATE_FORMAT(now(), '%Y%m%d%H%i%S'), #{tranType},
+			#{otherAccountNo}, #{otherAccountName},#{amount},#{balance},
+			#{channelSystemNo}, #{channelSerialNo},'0');
+    </insert>
+    <!-- 校验账号户名 -->
+    <select id="checkAccount" parameterType="AccountInfo" resultMap="AccountInfoMap">
+		select 
+			aif_accountNo
+		from
+			accountinfo
+		where
+			aif_accountNo=#{accountNo} and aif_accountName=#{accountName}
+    </select>
+    <!-- 查询账户交易记录总数 -->
+    <select id="countAccountRecord" parameterType="Map" resultType="int">
+		select 
+			count(0)
+		from
+			accountrecord 
+		where 
+			acd_accountno=#{accountNo} and acd_trantime>#{startTime} and #{endTime}>acd_trantime
+    </select>
+    <!-- 查询账户交易记录明细 -->
+    <select id="queryAccountRecord" parameterType="Map" resultMap="AccountRecordMap">
+		select 
+			acd_serialno,acd_accountno,acd_trantime,acd_trantype,acd_otheraccountno,
+			acd_otheraccountname,acd_amount,acd_balance,acd_status
+		from
+			accountrecord
+		where
+			acd_accountno=#{accountNo} and acd_trantime>#{startTime} and #{endTime}>acd_trantime
+		order by acd_trantime 
+		limit #{startPos},#{pageShowNum}
+    </select>
+    <!-- 查询日志信息 -->
+    <select id="checkAccessNo" parameterType="Map" resultType="int">
+		select 
+			count(0)
+		from
+			accountlog
+		where
+			alg_channelsystemno=#{channelSystemNo} and alg_channelserialno=#{channelSerialNo}
+    </select>
+    <!-- 记录日志信息 -->
+    <insert id="insertAccountLog" parameterType="Map">
+		insert into 
+			accountlog
+			(alg_time,alg_code,alg_requestmessage,alg_returncode,
+			alg_returnmessage,alg_channelsystemno,alg_channelserialno)
+		values
+			(DATE_FORMAT(now(), '%Y%m%d%H%i%S'),#{tranType},#{requestMessage},'99999999',
+			'交易处理中', #{channelSystemNo}, #{channelSerialNo});
+    </insert>
+    <!-- 更新日志信息 -->
+    <update id="updateAccountLog" parameterType="Map">
+		update accountlog 
+		set alg_returncode=#{returnCode},alg_returnmessage=#{returnMessage},
+			alg_responsemessage=#{responseMessage}
+		where 
+			alg_channelsystemno=#{channelSystemNo} and alg_channelserialno=#{channelSerialNo};
+    </update>
+    <!-- 查询日志 -->
+    <select id="queryAccountLog" parameterType="AccountLog" resultMap="AccountLogMap">
+		select 
+			alg_time,alg_code,alg_returncode,alg_returnmessage,alg_REVERSALSTATUS
+		from
+			accountlog
+		where
+			alg_channelsystemno=#{channelSystemNo} and alg_channelserialno=#{originalSerialNo};
+    </select>
+    <!-- 查询账户 -->
+    <select id="queryAccountByLog" parameterType="AccountLog" resultMap="AccountInfoMap">
+		select 
+			aif_accountNo
+		from
+			accountinfo
+		where
+			AIF_CHANNELSYSTEMNO=#{channelSystemNo} and AIF_CHANNELSERIALNO=#{originalSerialNo}
+    </select>
+    <!-- 查询账户交易记录 -->
+    <select id="getAccountRecord" parameterType="AccountLog" resultMap="AccountRecordMap">
+		SELECT ACD_ACCOUNTNO,ACD_OTHERACCOUNTNO,ACD_OTHERACCOUNTNAME,ACD_AMOUNT 
+		FROM ACCOUNTRECORD 
+		WHERE ACD_CHANNELSYSTEMNO=#{channelSystemNo} AND ACD_CHANNELSERIALNO=#{originalSerialNo} AND ACD_TRANTYPE='12';
+    </select>
+    <!-- 冲正成功后更新原交易日志信息 -->
+    <update id="updateReversalAccountLog" parameterType="Map">
+		update accountlog 
+		set ALG_REVERSALSTATUS='1',ALG_REVERSALSERIALNO=#{channelSerialNo}
+		where 
+			alg_channelsystemno=#{channelSystemNo} and alg_channelserialno=#{originalSerialNo};
+    </update>    
+</mapper>

@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Insert title here</title>
+</head>
+<body>
+	<form action="queryAccount.do" method="post">	
+		<input type="hidden" name="channelSystemNo" value="000000">
+		<input type="hidden" id="channelSerialNo" name="channelSerialNo" value="">		
+		账号：<input type="text" name="accountNo"><br><br>
+		<input type="submit" value="查询">&nbsp;&nbsp;&nbsp;&nbsp;
+		<input type="button" value="返回首页" onclick="javascript:window.location='index.html'">
+	</form>
+<script>
+var timestamp = (new Date()).valueOf(); 
+document.getElementById("channelSerialNo").value=timestamp;
+</script>
+</body>
+</html>

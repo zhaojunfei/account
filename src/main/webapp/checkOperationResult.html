@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Insert title here</title>
+</head>
+<body>
+	<form action="checkOperationResult.do" method="post">	
+		<input type="hidden" name="channelSystemNo" value="000000">
+		<input type="hidden" id="channelSerialNo" name="channelSerialNo" value="">
+		<input type="text" name="originalSerialNo" value="">		
+		<input type="submit" value="查证">&nbsp;&nbsp;&nbsp;&nbsp;
+		<input type="button" value="返回首页" onclick="javascript:window.location='index.html'">
+	</form>
+	
+<br><br>
+<p style="color:gray;font-size:10px">
+returnCode返回值含义如下：<br><br>
+-1：交易不存在&nbsp;
+0：交易成功&nbsp;
+1：交易失败&nbsp;
+</p>
+<script>
+var timestamp = (new Date()).valueOf(); 
+document.getElementById("channelSerialNo").value=timestamp;
+</script>
+</body>
+</html>

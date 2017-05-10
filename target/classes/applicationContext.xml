@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:context="http://www.springframework.org/schema/context"
+    xmlns:aop="http://www.springframework.org/schema/aop"
+    xmlns:tx="http://www.springframework.org/schema/tx"
+    xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/context
+		http://www.springframework.org/schema/context/spring-context-4.0.xsd
+		http://www.springframework.org/schema/tx
+		http://www.springframework.org/schema/tx/spring-tx-4.0.xsd  
+		http://www.springframework.org/schema/aop
+		http://www.springframework.org/schema/aop/spring-aop-4.0.xsd">
+	
+	<!-- 开启注解配置 -->  
+	<context:annotation-config /> 
+
+	<!-- 扫描Controller,service层 -->
+	<context:component-scan base-package="com.qianbao*"/>
+
+	<!-- 加载jdbc.property -->
+    <bean id="propertyConfigurer" class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+        <property name="locations">
+            <list>
+                <value>classpath:application.properties</value>
+            </list>
+        </property> 
+	    <!-- 允许多次加载属性文件-->
+	    <property name="ignoreUnresolvablePlaceholders" value="true"/>
+	</bean>
+    
+    <!-- 数据库连接池 -->
+	<bean id="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
+		<property name="driverClassName" value="${db.driver}"></property>
+		<property name="url" value="${db.url}"></property>
+		<property name="username" value="${db.user}"></property>
+		<property name="password" value="${db.pass}"></property>
+	</bean>
+	
+
+
+	
+	<!-- mybatis-spring整合 -->
+	<bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+  		<property name="dataSource" ref="dataSource" />
+  		<property name="configLocation" value="classpath:mybatis-config.xml" />
+	</bean>
+	<!-- 自动扫描mybatis映射 -->
+	<bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+		<property name="basePackage" value="com.qianbao.mapper" />
+	</bean>
+	<!-- 允许访问账户服务白名单列表 -->
+	<bean id="allowAccessSystem" class="org.springframework.beans.factory.config.MapFactoryBean">  
+		<property name="sourceMap">  
+			<map>  
+				<entry key="000000" value="${channelSystemNo.000000}"/><!-- 自己 -->
+				<entry key="001001" value="${channelSystemNo.001001}"/><!-- 交易中心 -->
+				<entry key="002001" value="${channelSystemNo.002001}"/><!-- 会员中心 -->
+				<entry key="003001" value="${channelSystemNo.003001}"/><!-- 运营中心 -->
+				<entry key="004001" value="${channelSystemNo.004001}"/><!-- 商户中心 -->
+				<entry key="005001" value="${channelSystemNo.005001}"/><!-- 清算分润 -->
+				<entry key="006001" value="${channelSystemNo.006001}"/><!-- 微信前置 -->
+			</map>  
+		</property>  
+	</bean>
+	<!-- 事务管理器 -->  
+	<bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">  
+		<property name="dataSource" ref="dataSource" />  
+	</bean>
+	
+	<tx:annotation-driven transaction-manager="transactionManager"/>
+	 
+</beans>

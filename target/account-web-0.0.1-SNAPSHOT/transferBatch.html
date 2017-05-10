@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Insert title here</title>
+<style>
+table,tr,td{
+	border : 1px solid #ccc;
+	border-collapse:collapse;
+	border-spacing:0;
+	line-height:30px;
+	padding:10px;
+}
+</style>
+</head>
+<body>
+<form action="transferBatch.do" method="post">
+<input type="hidden" name="channelSystemNo" value="000000">
+<input type="hidden" id="channelSerialNo" name="channelSerialNo" value="">	
+<table id="myTable">
+	<tr>
+		<td>
+		付款账号：<input type="text" name="accountNo">
+		</td>
+	</tr>
+	<tr>
+		<td>
+		收款账号：<input type="text" name="accountRecordList[0].otherAccountNo">&nbsp;&nbsp;
+		收款户名：<input type="text" name="accountRecordList[0].otherAccountName">&nbsp;&nbsp;
+		收款金额：<input type="text" name="accountRecordList[0].amount">&nbsp;&nbsp;
+		<a href="#" onclick="javascript:addTr()" style="text-decoration:none;">+</a>
+		</td>
+	</tr>
+	
+</table>
+<br>
+<br>
+<input type="submit" value="付款">&nbsp;&nbsp;&nbsp;&nbsp;
+<input type="button" value="返回首页" onclick="javascript:window.location='index.html'">
+</form>
+<script>
+function addTr(){
+	var myTable=document.getElementById("myTable");
+	var tableLength=myTable.rows.length;
+	var arrayIndex=tableLength-1;
+	var trObj = myTable.insertRow();
+	var tdObj = trObj.insertCell(0);
+	tdObj.innerHTML  = "<td>收款账号：<input type='text' name='accountRecordList["+arrayIndex+"].otherAccountNo'>&nbsp;&nbsp;"
+	  	+"收款户名：<input type='text' name='accountRecordList["+arrayIndex+"].otherAccountName'>&nbsp;&nbsp;"
+	  	+"收款金额：<input type='text' name='accountRecordList["+arrayIndex+"].amount'>&nbsp;&nbsp;"
+		+"<a href='#' onclick='javascript:addTr()' style='text-decoration:none;'>+</a>&nbsp;&nbsp;"
+	  	+"<a href='#' onclick='javascript:deleteTr(\""+tableLength+"\")' style='text-decoration:none;'>-</a>&nbsp;&nbsp;</td>";
+
+}
+
+function deleteTr(trIndex){
+	var myTable=document.getElementById("myTable");
+	var tableLength=myTable.rows.length;
+	if(trIndex<tableLength){
+		myTable.deleteRow(trIndex);
+	}else{
+		myTable.deleteRow(tableLength-1);
+	}
+}
+var timestamp = (new Date()).valueOf(); 
+document.getElementById("channelSerialNo").value=timestamp;
+</script>
+</body>
+</html>
