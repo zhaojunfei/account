@@ -7,8 +7,8 @@ cd account<br/>
 mysql -uroot -p<br/>
 CREATE DATABASE IF NOT EXISTS account DEFAULT CHARSET utf8 COLLATE utf8_general_ci;<br/>
 grant all privileges on account.* to account@localhost identified by &#39;account&#39;;<br/>
-grant select, insert, update, delete on *.* to common@localhost identified by &#39;123123&#39;;<br/>
-grant select, insert, update, delete on *.* to common@'%' identified by &#39;123123&#39;;<br/>
+grant select, insert, update, delete on *.* to account@localhost identified by &#39;123123&#39;;<br/>
+grant select, insert, update, delete on *.* to account@'%' identified by &#39;123123&#39;;<br/>
 grant all privileges on account.* to account@&#39;%&#39; identified by &#39;account&#39;;<br/>
 grant create routine on account.* to account@&#39;%&#39;;<br/>
 grant alter&nbsp; routine on account.* to account@&#39;%&#39;;<br/>grant execute on account.* to account@&#39;%&#39;;<br/>
